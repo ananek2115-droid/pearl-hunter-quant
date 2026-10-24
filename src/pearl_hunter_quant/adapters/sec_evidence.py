@@ -9,6 +9,7 @@ import argparse
 from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation
 import json
+import math
 from pathlib import Path
 import re
 
@@ -61,14 +62,15 @@ def validate_export(data: dict) -> dict:
     if data.get("research_only") is not True:
         raise ValueError("Research-only marker required")
     state = data.get("scan_health")
-    if state not in ALLOWED_STATUS:
+    if not isinstance(state, str) or state not in ALLOWED_STATUS:
         raise ValueError("Unknown scan status")
     scan_time, generated = _stamp(data.get("scan_timestamp_utc")), _stamp(data.get("generated_at_utc"))
     if generated < scan_time:
         raise ValueError("Export cannot predate source scan")
     calculated_age = (generated - scan_time).total_seconds() / 3600
     age = data.get("scan_age_hours")
-    if type(age) not in (int, float) or abs(age - calculated_age) > 0.06 or age < 0:
+    if (type(age) not in (int, float) or not math.isfinite(age)
+            or abs(age - calculated_age) > 0.06 or age < 0):
         raise ValueError("Inconsistent scan age")
     if calculated_age > 72 and state != "stale":
         raise ValueError("Overage must be reported stale")
@@ -87,7 +89,8 @@ def validate_export(data: dict) -> dict:
     coverage = data.get("coverage")
     if not isinstance(coverage, list) or len(coverage) != len(tickers):
         raise ValueError("Must explicitly declare all watchlist ticker coverage")
-    if {c.get("ticker") for c in coverage if isinstance(c, dict)} != base:
+    if any(not isinstance(c, dict) or not isinstance(c.get("ticker"), str)
+           for c in coverage) or {c["ticker"] for c in coverage} != base:
         raise ValueError("Coverage tickers not aligned with watchlist")
     if any(
         not isinstance(c, dict)
@@ -110,7 +113,8 @@ def validate_export(data: dict) -> dict:
         if not isinstance(e, dict):
             raise ValueError("Event is not an object")
         ticker, acc, cik = e.get("ticker"), e.get("accession"), e.get("cik")
-        if (ticker not in base or not isinstance(acc, str) or not ACC.fullmatch(acc)
+        if (not isinstance(ticker, str) or ticker not in base
+                or not isinstance(acc, str) or not ACC.fullmatch(acc)
                 or type(cik) is not int or cik <= 0
                 or e.get("evidence_type") != "sec_form4_derived_purchase"
                 or e.get("first_publication_date", "NOT_SET") is not None
