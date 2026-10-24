@@ -79,3 +79,18 @@ Scans do not establish actual insider positions or buy/sell recommendations.
 The optional router client refuses non-loopback endpoints, ambient proxy
 routing and HTTP redirects. Live mode still requires an operator-provided
 local key and explicit approval. Benchmarks are not sent to CI providers.
+
+## Measured effectiveness (prospective research only)
+
+The `forward_eval` module evaluates ONLY analyst-approved candidate ideas
+recorded before future price moves against adjusted benchmark prices,
+with 5/20/60-session cohorts and conservative minimum-sample rules.
+It cannot infer market profitability from raw SEC filing alerts or watchlists.
+
+The initial real approved-signal ledger has not been populated. Therefore
+**investment hit rate and excess return are still N/A**, not a marketing
+success percentage. The shipped example contains no signals and synthetic
+benchmark prices for CI testing only. Read
+[Prospective evaluation methodology](research/PROSPECTIVE_EVALUATION.md).
+
+    python -m pearl_hunter_quant.forward_eval --signals examples/forward_signals_synthetic.json --prices examples/forward_prices_synthetic.json --as-of-utc 2026-10-24T23:59:59Z --output local_results/forward_eval.json
