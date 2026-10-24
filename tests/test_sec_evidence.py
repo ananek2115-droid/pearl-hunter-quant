@@ -142,3 +142,20 @@ def test_partial_status_and_invalid_record_count():
         validate_export(obj)
     obj["scan_health"] = "partial"
     assert validate_export(obj)["invalid_positive_records"] == 1
+
+
+def test_malformed_json_types_fail_closed():
+    obj = source()
+    obj["scan_age_hours"] = float("nan")
+    with pytest.raises(ValueError):
+        validate_export(obj)
+
+    obj = source()
+    obj["events"][0]["ticker"] = ["APLD"]
+    with pytest.raises(ValueError):
+        validate_export(obj)
+
+    obj = source()
+    obj["coverage"][0]["ticker"] = ["APLD"]
+    with pytest.raises(ValueError):
+        validate_export(obj)
