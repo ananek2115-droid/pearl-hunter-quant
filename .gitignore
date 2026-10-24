@@ -1,0 +1,13 @@
+# Secrets and local experiment outputs
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+local_results/
+reports/llm_*.json

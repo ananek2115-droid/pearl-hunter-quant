@@ -1,0 +1,24 @@
+{
+  "_notice": "All data are fictional, not an actual SEC filing or investment analysis.",
+  "cases": [
+    {
+      "case_id": "fictional_company",
+      "evidence": [
+        {"source_id": "synthetic:income", "text": "Fictional company DEMO: FY2025 revenue USD 120 million; FY2024 revenue USD 100 million."},
+        {"source_id": "synthetic:cash", "text": "DEMO FY2025 fictional operating cash flow was USD 7.5 million."}
+      ],
+      "expected": [
+        {"fact_id": "revenue_2025_musd", "value": 120, "source_id": "synthetic:income"},
+        {"fact_id": "revenue_2024_musd", "value": 100, "source_id": "synthetic:income"},
+        {"fact_id": "cash_flow_2025_musd", "value": 7.5, "source_id": "synthetic:cash"}
+      ],
+      "offline_response": {
+        "findings": [
+          {"fact_id": "revenue_2025_musd", "value": 120, "source_id": "synthetic:income"},
+          {"fact_id": "revenue_2024_musd", "value": 100, "source_id": "synthetic:income"},
+          {"fact_id": "cash_flow_2025_musd", "value": 7.5, "source_id": "synthetic:cash"}
+        ]
+      }
+    }
+  ]
+}

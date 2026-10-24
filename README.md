@@ -35,3 +35,28 @@ WAIT is a research state, not an instruction to trade. Production integration sh
 
     python -m pip install -e .
     pytest -q
+
+## Experimental LLM lab: FreeLLMAPI (optional)
+
+An isolated, read-only `llm_lab` evaluates numeric facts and source IDs on
+synthetic fixtures. **No router or remote model is installed and no live keys
+are required for CI.** See [LLM_LAB.md](research/LLM_LAB.md).
+
+    python -m pearl_hunter_quant.llm_lab
+
+Real local comparison requires a separately configured FreeLLMAPI gateway and
+explicit `--live --model MODEL_ID`; keep the unified proxy key in the local
+`FREELLMAPI_API_KEY` environment variable, never the repository. Results do
+not produce trading signals.
+
+## Experimental MiroFish scenario intake (offline only)
+
+The `scenario_lab` importer accepts an authorized local JSON export of a
+**completed** MiroFish simulation report and marks it as hypothetical,
+unverified, and requiring analyst review. It does not run MiroFish, call a
+model, or assert real-world predictive power. See
+[SCENARIO_LAB.md](research/SCENARIO_LAB.md).
+
+    python -m pearl_hunter_quant.scenario_lab local_results/report.json --output local_results/scenario.json
+
+Never commit sensitive export files or portfolio data.
