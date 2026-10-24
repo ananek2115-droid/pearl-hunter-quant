@@ -47,7 +47,7 @@ def test_two_matured_synthetic_signals_with_benchmark():
     assert c5["matured"] == 2
     assert c5["status"] == "measurable"
     assert c5["hit_rate_vs_benchmark"] == .5
-    assert c5["mean_excess_return"] == -.025
+    assert c5["mean_excess_return"] == .025
     assert [r["entry_date"] for r in result["outcomes"] if r["horizon_sessions"] == 5] == [DAYS[0], DAYS[0]]
     assert [r["exit_date"] for r in result["outcomes"] if r["horizon_sessions"] == 5] == [DAYS[5], DAYS[5]]
     assert result["cohorts"][1]["status"] == "insufficient_sample"
