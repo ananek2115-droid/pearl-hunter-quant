@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "price_type": "adjusted_close",
+  "source": "SYNTHETIC_TEST_DATA_NOT_MARKET",
+  "prices": [
+    {
+      "ticker": "SPY",
+      "date": "2026-10-13",
+      "adjusted_close": 100
+    },
+    {
+      "ticker": "SPY",
+      "date": "2026-10-14",
+      "adjusted_close": 100.5
+    },
+    {
+      "ticker": "SPY",
+      "date": "2026-10-15",
+      "adjusted_close": 101
+    },
+    {
+      "ticker": "SPY",
+      "date": "2026-10-16",
+      "adjusted_close": 101.4
+    },
+    {
+      "ticker": "SPY",
+      "date": "2026-10-19",
+      "adjusted_close": 101.7
+    },
+    {
+      "ticker": "SPY",
+      "date": "2026-10-20",
+      "adjusted_close": 102.4
+    },
+    {
+      "ticker": "SPY",
+      "date": "2026-10-21",
+      "adjusted_close": 102.8
+    }
+  ],
+  "_notice": "Illustrative prices; no inference about actual SPY."
+}
