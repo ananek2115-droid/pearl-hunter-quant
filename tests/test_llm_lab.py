@@ -107,3 +107,37 @@ def test_offline_fixture_and_cli():
     assert len(cases) == 1
     assert score_response(cases[0], cases[0].offline_response)["accuracy"] == 1.0
     assert main([]) == 0
+
+
+def test_redirects_are_explicitly_forbidden():
+    from pearl_hunter_quant.llm_lab import _NoRedirect
+    handler = _NoRedirect()
+    assert handler.redirect_request(None, None, 302, "Found", {}, "http://example.com") is None
+
+
+def test_local_gateway_fetch_explicitly_disables_proxies(monkeypatch):
+    from urllib.request import ProxyHandler
+    import pearl_hunter_quant.llm_lab as lab
+
+    captured = {}
+    class FakeOpener:
+        def open(self, request, timeout):
+            captured["url"] = request.full_url
+            captured["timeout"] = timeout
+            class Response:
+                def __enter__(self): return self
+                def __exit__(self, *_): return False
+                def read(self, size): return b'{"ok": true}'
+            return Response()
+
+    def mock_build_opener(*handlers):
+        captured["handlers"] = handlers
+        return FakeOpener()
+
+    monkeypatch.setattr(lab, "build_opener", mock_build_opener)
+    data = lab._fetch(lab.Request("http://127.0.0.1:3001/v1/models"), 2.0)
+    assert data == b'{"ok": true}'
+    assert captured["url"] == "http://127.0.0.1:3001/v1/models"
+    assert captured["timeout"] == 2.0
+    assert any(type(h) is ProxyHandler and h.proxies == {} for h in captured["handlers"])
+    assert any(isinstance(h, lab._NoRedirect) for h in captured["handlers"])
