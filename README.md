@@ -94,3 +94,17 @@ benchmark prices for CI testing only. Read
 [Prospective evaluation methodology](research/PROSPECTIVE_EVALUATION.md).
 
     python -m pearl_hunter_quant.forward_eval --signals examples/forward_signals_synthetic.json --prices examples/forward_prices_synthetic.json --as-of-utc 2026-10-24T23:59:59Z --output local_results/forward_eval.json
+
+## Private analyst-approved signals from SEC
+
+The SEC project now has a **private** prospective journal, initially with
+**zero approved stock ideas**. QUANT's `approved_intake` validates the journal
+locally (required approval marker, time bounds, card hash and source links).
+It does not open private GitHub, autonomously approve or execute trades.
+
+    python -m pearl_hunter_quant.approved_intake --ledger local_results/approved_signals.json --as-of-utc 2026-10-24T23:59:59Z --output local_results/ledger_audit.json
+
+This is only a format/authorization-metadata check. Independently verify
+original source publication times and the Git history proving prospective
+creation. For investment outcome analysis use `forward_eval` with real
+independent price data, once the cohort has matured.
