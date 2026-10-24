@@ -60,3 +60,22 @@ model, or assert real-world predictive power. See
     python -m pearl_hunter_quant.scenario_lab local_results/report.json --output local_results/scenario.json
 
 Never commit sensitive export files or portfolio data.
+
+
+## Private SEC → QUANT bridge (local only)
+
+The private SEC repository now has a versioned, read-only evidence exporter.
+QUANT accepts the JSON locally, validates all source references, metadata and
+event counts, and produces a human review report without brokerage access or
+model inference. See [SEC evidence bridge](research/SEC_EVIDENCE_BRIDGE.md).
+
+    python -m pearl_hunter_quant.adapters.sec_evidence local_results/sec-evidence.json --output local_results/sec-review.md
+
+Never commit the exported JSON to the public QUANT repository.
+Scans do not establish actual insider positions or buy/sell recommendations.
+
+## Local FreeLLMAPI network hardening
+
+The optional router client refuses non-loopback endpoints, ambient proxy
+routing and HTTP redirects. Live mode still requires an operator-provided
+local key and explicit approval. Benchmarks are not sent to CI providers.
