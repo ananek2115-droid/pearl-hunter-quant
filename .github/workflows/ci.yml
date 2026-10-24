@@ -17,3 +17,5 @@ jobs:
         run: python -m pearl_hunter_quant.llm_lab --output /tmp/quant_llm_offline.json
       - name: Prospective evaluation empty-ledger check
         run: python -m pearl_hunter_quant.forward_eval --signals examples/forward_signals_synthetic.json --prices examples/forward_prices_synthetic.json --as-of-utc 2026-10-24T23:59:59Z --output /tmp/forward_eval.json
+      - name: Empty approved-signal ledger intake smoke
+        run: python -m pearl_hunter_quant.approved_intake --ledger examples/forward_signals_synthetic.json --as-of-utc 2026-10-24T23:59:59Z --output /tmp/approved_intake.json
