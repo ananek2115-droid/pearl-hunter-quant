@@ -10,7 +10,7 @@ from pathlib import Path
 import time
 from typing import Any, Callable
 from urllib.parse import urlsplit
-from urllib.request import Request, urlopen
+from urllib.request import Request, HTTPRedirectHandler, ProxyHandler, build_opener
 
 
 class GatewayError(RuntimeError):
@@ -37,8 +37,18 @@ def _validate_local_url(base: str) -> str:
     return base.rstrip("/")
 
 
+class _NoRedirect(HTTPRedirectHandler):
+    """No redirected prompts or bearer tokens to unexpected destinations."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
 def _fetch(request: Request, timeout: float) -> bytes:
-    with urlopen(request, timeout=timeout) as response:
+    # An explicit empty ProxyHandler prevents ambient HTTP(S)_PROXY values
+    # from proxying local prompts; a blocked redirect prevents exfiltration.
+    opener = build_opener(ProxyHandler({}), _NoRedirect())
+    with opener.open(request, timeout=timeout) as response:
         return response.read(1_000_001)
 
 
