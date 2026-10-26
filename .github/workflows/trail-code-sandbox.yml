@@ -1,0 +1,87 @@
+name: Trail-code Isolated CLI Probe
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/trail-code-sandbox.yml'
+      - 'research/TRAIL_CODE_PILOT.md'
+      - 'src/pearl_hunter_quant/trail_pilot.py'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  trail-index-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      DO_NOT_TRACK: '1'
+      GITHUB_TOKEN: ''
+      NODE_ENV: production
+      CI: 'true'
+      NO_COLOR: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned CLI without npm lifecycle scripts
+        run: |
+          npm view @trailhq/trail-code@0.24.1 version
+          npm install --prefix "$RUNNER_TEMP/trail" --no-save --ignore-scripts --no-audit --no-fund @trailhq/trail-code@0.24.1
+      - name: Read-only index and query against repo code
+        run: |
+          export HOME="$RUNNER_TEMP/empty-home"
+          mkdir -p "$HOME" "$RUNNER_TEMP/probe"
+          export TRAIL_BIN="$RUNNER_TEMP/trail/node_modules/.bin/trail"
+          python - <<"PY"
+          import json, os, pathlib, subprocess, time
+          root=pathlib.Path(os.environ['GITHUB_WORKSPACE'])
+          output=pathlib.Path(os.environ['RUNNER_TEMP'])/'probe'
+          trail=os.environ['TRAIL_BIN']
+          def run(args):
+              started=time.perf_counter()
+              proc=subprocess.run(args,cwd=root,capture_output=True,text=True,timeout=180,check=False)
+              seconds=round(time.perf_counter()-started,3)
+              return {'duration_seconds':seconds,'returncode':proc.returncode,
+                      'stdout':proc.stdout[:25000],'stderr':proc.stderr[:4000]}
+          build=run([trail,'build',str(root)])
+          query=run([trail,'ask','Where are future-dated approved signals rejected?',str(root)]) if build['returncode']==0 else None
+          # Baseline is standard git text search, not an agent A/B productivity run.
+          baseline=run(['git','grep','-n','source_public_at_utc','--','src/'])
+          summary={'tool':'Trail-code 0.24.1','scope':'local_public_QUANT_only',
+                   'execution':'actual_isolated_GitHub_Actions_CLI_probe',
+                   'telemetry_disabled':True,'secrets_supplied':False,
+                   'agent_token_savings':None,'agent_task_speedup':None,
+                   'build_returncode':build['returncode'],
+                   'build_seconds':build['duration_seconds'],
+                   'ask_returncode':query['returncode'] if query else None,
+                   'ask_seconds':query['duration_seconds'] if query else None,
+                   'ask_mentions_relevant_module':bool(query and any(s in query['stdout'] for s in ('forward_eval.py','approved_intake.py'))),
+                   'git_grep_returncode':baseline['returncode'],
+                   'git_grep_seconds':baseline['duration_seconds'],
+                   'git_grep_hits':len(baseline['stdout'].splitlines())}
+          (output/'probe.json').write_text(json.dumps(summary,indent=2)+'\n')
+          (output/'readme.txt').write_text('Isolated CLI probe only. Not a matched agent trial. No LLM inference.\n')
+          print(json.dumps(summary,indent=2))
+          if build['returncode']!=0:
+              print('Index error:',build['stderr'][-1700:])
+              raise SystemExit('Trail build unsuccessful with ignore-scripts; no unsafe retry')
+          if not query or query['returncode']!=0:
+              print('Query error:',query['stderr'][-1700:] if query else 'not attempted')
+              raise SystemExit('Trail ask unsuccessful')
+          PY
+      - name: Preserve anonymized timing report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trail-code-readonly-probe
+          path: ${{ runner.temp }}/probe/
+          retention-days: 7
+          if-no-files-found: ignore
