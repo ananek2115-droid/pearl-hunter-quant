@@ -37,3 +37,20 @@ copy with observed paired measurements. Keep the tracked fixture empty.
 NO_DATA on the empty fixture is intentional. Five correct comparable
 pairs produce DESCRIPTIVE_ONLY, not an efficacy or statistical finding.
 Never install on production or connect private secrets automatically.
+
+## First actual isolated CLI probe — 2026-10-26
+
+GitHub Actions: https://github.com/ananek2115-droid/pearl-hunter-quant/actions/runs/40346979756
+
+- Published package: `@trailhq/trail-code@0.24.1`, installed with `--ignore-scripts`.
+- GitHub Actions public QUANT checkout, no repository credentials persisted,
+  `DO_NOT_TRACK=1`, no model calls, no secrets passed to scripts.
+- `trail build`: **0.618 seconds** on the runner.
+- `trail ask`: **0.265 seconds**, exit 0, named a relevant review module.
+- Comparison `git grep`: **0.002 seconds**, two text matches.
+
+**Do not compare these timings as interchangeable workloads**: git grep does
+literal text matching; Trail-code returns indexed contextual structure.
+This was **one CLI query**, not a randomized matched A/B agent experiment.
+Our real-agent token savings, elapsed task time and task-quality improvement
+remain **UNKNOWN**; the separate measurement ledger intentionally stays EMPTY.
