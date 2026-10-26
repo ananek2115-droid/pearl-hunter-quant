@@ -30,6 +30,8 @@ class AutoResearchResult:
     experiments: tuple[Experiment, ...]
     selected: str
     real_measurements: bool = False
+    test_score: float | None = None
+    test_until: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -37,6 +39,8 @@ class AutoResearchResult:
             "experiments": [asdict(item) for item in self.experiments],
             "selected": self.selected,
             "real_measurements": self.real_measurements,
+            "test_score": self.test_score,
+            "test_until": self.test_until,
         }
 
 
@@ -51,6 +55,7 @@ def run_autoresearch(
     *,
     train_until: date,
     validation_until: date,
+    test_until: date | None = None,
     date_key: str = "as_of",
     complexity: Mapping[str, float] | None = None,
     min_validation_gain: float = 0.0,
@@ -60,15 +65,25 @@ def run_autoresearch(
     Dates must be ISO ``YYYY-MM-DD`` strings. Validation is strictly after the
     training cutoff and at/before ``validation_until``. Candidate names are
     sorted so repeated runs produce the same experiment order.
+    If ``test_until`` is supplied, it must be after ``validation_until`` and
+    is evaluated exactly once after model selection. It is never used to pick
+    a candidate. Without it the result is explicitly not an out-of-sample
+    measurement.
     """
     ordered = tuple(sorted((dict(row) for row in rows), key=lambda row: str(row[date_key])))
-    if any(date.fromisoformat(str(row[date_key])) > validation_until for row in ordered):
+    if test_until is not None and test_until <= validation_until:
+        raise ValueError("test_until must be after validation_until")
+    upper = test_until or validation_until
+    if any(date.fromisoformat(str(row[date_key])) > upper for row in ordered):
         raise ValueError("rows after validation_until are outside the experiment")
     train = tuple(row for row in ordered if date.fromisoformat(str(row[date_key])) <= train_until)
     validation = tuple(
         row for row in ordered
         if train_until < date.fromisoformat(str(row[date_key])) <= validation_until
     )
+    test = tuple(row for row in ordered
+                 if test_until is not None
+                 and validation_until < date.fromisoformat(str(row[date_key])) <= test_until)
     if not train or not validation:
         raise ValueError("both train and validation cohorts are required")
 
@@ -99,4 +114,14 @@ def run_autoresearch(
         experiments.append(item)
         if is_accepted and (validation_score, -item.complexity, name) > (accepted.validation_score, -accepted.complexity, accepted.name):
             accepted = item
-    return AutoResearchResult(baseline, tuple(experiments), accepted.name)
+    test_score = None
+    if test_until is not None:
+        if not test:
+            raise ValueError("test cohort is required when test_until is supplied")
+        test_score = score(accepted.name, test)
+    return AutoResearchResult(
+        baseline, tuple(experiments), accepted.name,
+        real_measurements=test_until is not None,
+        test_score=test_score,
+        test_until=test_until.isoformat() if test_until else None,
+    )

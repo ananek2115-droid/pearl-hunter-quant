@@ -33,3 +33,24 @@ def test_lookahead_rows_are_rejected():
             {"baseline": lambda row: 0.5},
             train_until=date(2026, 1, 1), validation_until=date(2026, 1, 3),
         )
+
+
+def test_selection_is_not_called_an_out_of_sample_measurement_without_test():
+    rows = [{"as_of": f"2026-01-0{i}", "signal": i % 2} for i in range(1, 5)]
+    result = run_autoresearch(
+        rows, {"baseline": lambda row: 0.5, "candidate": lambda row: row["signal"]},
+        train_until=date(2026, 1, 2), validation_until=date(2026, 1, 4),
+    )
+    assert result.real_measurements is False
+    assert result.test_score is None
+
+
+def test_test_cohort_is_evaluated_only_after_selection():
+    rows = [{"as_of": f"2026-01-0{i}", "signal": i % 2} for i in range(1, 8)]
+    result = run_autoresearch(
+        rows, {"baseline": lambda row: 0.5, "candidate": lambda row: row["signal"]},
+        train_until=date(2026, 1, 2), validation_until=date(2026, 1, 4),
+        test_until=date(2026, 1, 7),
+    )
+    assert result.real_measurements is True
+    assert result.test_score is not None
