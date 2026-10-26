@@ -82,6 +82,15 @@ local key and explicit approval. Benchmarks are not sent to CI providers.
 
 ## Measured effectiveness (prospective research only)
 
+## Isolated autoresearch pilot
+
+`pearl_hunter_quant.autoresearch` is a small, deterministic experiment loop
+inspired by the autoresearch pattern: fixed temporal cohorts, sorted candidate
+order, validation-only acceptance, a complexity tie-breaker, and a dataset
+hash in every result. It cannot see rows after `validation_until` and it does
+not mutate production scoring code. Tests use synthetic rows only. No real
+measurements or investment conclusions have been produced.
+
 The `forward_eval` module evaluates ONLY analyst-approved candidate ideas
 recorded before future price moves against adjusted benchmark prices,
 with 5/20/60-session cohorts and conservative minimum-sample rules.
