@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "contains_synthetic_measurements": false,
+  "observations": [],
+  "note": "Actual observed paired runs only; empty until measured."
+}

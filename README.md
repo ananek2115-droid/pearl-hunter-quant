@@ -117,3 +117,12 @@ This is only a format/authorization-metadata check. Independently verify
 original source publication times and the Git history proving prospective
 creation. For investment outcome analysis use `forward_eval` with real
 independent price data, once the cohort has matured.
+ 
+## Experimental Trail-code context mapping (NOT installed in CI)
+
+An isolated offline A/B evaluator measures actual matched agent workflows
+with and without Trail-code. The checked-in observation ledger is empty,
+therefore performance improvement is **NOT YET MEASURED**. No external
+dependencies or hooks are installed. See [Trail pilot](research/TRAIL_CODE_PILOT.md).
+
+    python -m pearl_hunter_quant.trail_pilot examples/trail_pilot_observations.json
